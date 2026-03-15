@@ -205,23 +205,19 @@ def draw_room(draw, room):
     x, y, w, h = room["x"], room["y"], room["w"], room["h"]
     accent = room["accent"]
 
-    # Room background fill
-    draw.rectangle([x + 1, y + 1, x + w - 1, y + h - 1], fill=WALL)
+    # Room background fill — solid dark fill for clarity
+    draw.rectangle([x + 1, y + 1, x + w - 1, y + h - 1], fill=(18, 24, 36))
 
-    # Border
-    draw.rectangle([x, y, x + w, y + h], outline=BORDER)
+    # Border — brighter for room definition
+    draw.rectangle([x, y, x + w, y + h], outline=(40, 55, 75))
 
-    # Accent line at top (3px thick)
-    for t in range(3):
+    # Accent line at top (4px thick, brighter)
+    for t in range(4):
         draw.line([x + 1, y + 1 + t, x + w - 1, y + 1 + t], fill=accent)
 
-    # Floor line
+    # Floor — solid line, no texture tiles
     floor_y = y + h - 14
-    draw.line([x + 4, floor_y, x + w - 4, floor_y], fill=dim(accent, 0.5))
-
-    # Floor tiles / texture
-    for tx in range(x + 8, x + w - 8, 16):
-        draw.line([tx, floor_y + 1, tx, floor_y + 4], fill=dim(BORDER, 0.6))
+    draw.line([x + 2, floor_y, x + w - 2, floor_y], fill=dim(accent, 0.6))
 
     # Room name label (top-left, below accent line)
     draw.text((x + 4, y + 6), room["name"].upper(), fill=accent)
@@ -300,18 +296,16 @@ def draw_title_bar(draw):
 # ---------------------------------------------------------------------------
 
 def draw_ambience(draw):
-    """Subtle scan-line overlay and glow dots on walls."""
+    """Subtle glow dots on walls. No scan lines (they cause visual noise)."""
     import random
     random.seed(42)  # deterministic
-    # Faint horizontal scan lines every 4px
-    for sy in range(0, H - 12, 4):
-        draw.line([0, sy, W, sy], fill=(255, 255, 255, 3))  # nearly invisible in RGBA
 
     # Tiny glow dots scattered in rooms
-    for _ in range(80):
+    for _ in range(40):
         gx = random.randint(10, W - 10)
         gy = random.randint(10, H - 20)
-        draw.point((gx, gy), fill=dim(CYAN, 0.15))
+        c = dim(CYAN, 0.3)
+        draw.rectangle([gx, gy, gx+1, gy+1], fill=c)
 
 
 # ---------------------------------------------------------------------------
