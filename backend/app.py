@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Star Office UI - Backend State Service"""
+"""Shadow Collective - Backend State Service"""
 
 from flask import Flask, jsonify, send_from_directory, make_response, request, session
 from datetime import datetime, timedelta
@@ -69,20 +69,46 @@ ASSET_DEFAULTS_FILE = os.path.join(ROOT_DIR, "asset-defaults.json")
 RUNTIME_CONFIG_FILE = os.path.join(ROOT_DIR, "runtime-config.json")
 
 # Canonical agent states: single source of truth for validation and mapping
-VALID_AGENT_STATES = frozenset({"idle", "writing", "researching", "executing", "syncing", "error"})
-WORKING_STATES = frozenset({"writing", "researching", "executing"})  # subset used for auto-idle TTL
+VALID_AGENT_STATES = frozenset({
+    "working", "thinking", "chatting", "meeting", "walking",
+    "idle", "sleeping", "error", "approving", "locked",
+})
+WORKING_STATES = frozenset({"working", "thinking", "chatting", "meeting"})  # subset used for auto-idle TTL
 STATE_TO_AREA_MAP = {
     "idle": "breakroom",
+    "working": "writing",
+    "thinking": "writing",
+    "chatting": "writing",
+    "meeting": "conference",
+    "walking": "breakroom",
+    "sleeping": "breakroom",
+    "approving": "writing",
+    "locked": "breakroom",
+    "error": "error",
+    # Legacy mappings for backward compatibility
     "writing": "writing",
     "researching": "writing",
     "executing": "writing",
     "syncing": "writing",
-    "error": "error",
 }
+
+# Valid rooms for the 19-agent Shadow Collective layout
+VALID_ROOMS = frozenset({
+    "ceo-suite", "chief-of-staff", "operations", "intelligence",
+    "creative", "business", "external", "governance", "personal",
+    "people", "conference", "lounge", "armory", "activity-board",
+})
+
+# All 19 Shadow Collective agents
+SHADOW_COLLECTIVE_AGENTS = [
+    "shadow", "nexus", "forge", "warden", "stack", "atlas", "ink",
+    "canvas", "ledger", "wire", "juris", "diplomat", "ryder",
+    "oracle", "apex", "foundry", "merchant", "harmony", "archive",
+]
 
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="/static")
-app.secret_key = os.getenv("FLASK_SECRET_KEY") or os.getenv("STAR_OFFICE_SECRET") or "star-office-dev-secret-change-me"
+app.secret_key = os.getenv("FLASK_SECRET_KEY") or os.getenv("STAR_OFFICE_SECRET") or "shadow-collective-dev-secret-change-me"
 
 # Session hardening
 app.config.update(
@@ -142,10 +168,18 @@ def add_no_cache_headers(response):
         response.headers["Expires"] = "0"
     return response
 
-# Default state
+# Default state (new 19-agent Shadow Collective format)
 DEFAULT_STATE = {
+    "hq_name": "Shadow Collective HQ",
+    "version": "3.0",
+    "agents": {name: {"state": "idle", "room": "operations", "task": "", "phase": 1, "active": True} for name in SHADOW_COLLECTIVE_AGENTS},
+    "activity_log": [],
+}
+
+# Legacy single-agent default for backward compat
+_LEGACY_DEFAULT_STATE = {
     "state": "idle",
-    "detail": "等待任务中...",
+    "detail": "Waiting...",
     "progress": 0,
     "updated_at": datetime.now().isoformat()
 }
@@ -154,11 +188,8 @@ DEFAULT_STATE = {
 def load_state():
     """Load state from file.
 
-    Includes a simple auto-idle mechanism:
-    - If the last update is older than ttl_seconds (default 25s)
-      and the state is a "working" state, we fall back to idle.
-
-    This avoids the UI getting stuck at the desk when no new updates arrive.
+    Supports the new 19-agent Shadow Collective format (version 3.0).
+    Falls back to default state if file is missing or malformed.
     """
     state = None
     if os.path.exists(STATE_FILE):
@@ -171,33 +202,11 @@ def load_state():
     if not isinstance(state, dict):
         state = dict(DEFAULT_STATE)
 
-    # Auto-idle
-    try:
-        ttl = int(state.get("ttl_seconds", 300))
-        updated_at = state.get("updated_at")
-        s = state.get("state", "idle")
-        if updated_at and s in WORKING_STATES:
-            # tolerate both with/without timezone
-            dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-            # Use UTC for aware datetimes; local time for naive.
-            if dt.tzinfo:
-                from datetime import timezone
-                age = (datetime.now(timezone.utc) - dt.astimezone(timezone.utc)).total_seconds()
-            else:
-                age = (datetime.now() - dt).total_seconds()
-            if age > ttl:
-                state["state"] = "idle"
-                state["detail"] = "待命中（自动回到休息区）"
-                state["progress"] = 0
-                state["updated_at"] = datetime.now().isoformat()
-                # persist the auto-idle so every client sees it consistently
-                try:
-                    save_state(state)
-                except Exception:
-                    pass
-    except Exception:
-        pass
+    # If it's the new 19-agent format (has "agents" key), return as-is
+    if "agents" in state and isinstance(state.get("agents"), dict):
+        return state
 
+    # Legacy single-agent format fallback
     return state
 
 
@@ -239,9 +248,17 @@ def ensure_electron_standalone_snapshot():
         print(f"[standalone] create failed: {e}")
 
 
-# Initialize state
+# Initialize state from sample if missing
 if not os.path.exists(STATE_FILE):
-    save_state(DEFAULT_STATE)
+    _sample = os.path.join(ROOT_DIR, "state.sample.json")
+    if os.path.exists(_sample):
+        try:
+            with open(_sample, "r", encoding="utf-8") as _sf:
+                save_state(json.load(_sf))
+        except Exception:
+            save_state(DEFAULT_STATE)
+    else:
+        save_state(DEFAULT_STATE)
 ensure_electron_standalone_snapshot()
 
 
@@ -562,20 +579,18 @@ def _animated_to_spritesheet(
 
 def normalize_agent_state(s):
     """Normalize agent state for compatibility.
-    Maps synonyms (e.g. working/busy -> writing, run/running -> executing) into VALID_AGENT_STATES.
+    Maps synonyms into VALID_AGENT_STATES.
     Returns 'idle' for unknown values.
     """
     if not s:
         return 'idle'
     s_lower = s.lower().strip()
-    if s_lower in {'working', 'busy', 'write'}:
-        return 'writing'
-    if s_lower in {'run', 'running', 'execute', 'exec'}:
-        return 'executing'
-    if s_lower in {'sync'}:
-        return 'syncing'
-    if s_lower in {'research', 'search'}:
-        return 'researching'
+    # Legacy mappings -> new states
+    if s_lower in {'writing', 'busy', 'write', 'researching', 'research', 'search',
+                    'executing', 'execute', 'exec', 'run', 'running', 'syncing', 'sync'}:
+        return 'working'
+    if s_lower in {'receiving', 'replying'}:
+        return 'chatting'
     if s_lower in VALID_AGENT_STATES:
         return s_lower
     return 'idle'
@@ -809,7 +824,7 @@ def _generate_rpg_background_to_webp(out_webp_path: str, width: int = 1280, heig
 
 
 def state_to_area(state):
-    """Map agent state to office area (breakroom / writing / error)."""
+    """Map agent state to office area (breakroom / writing / conference / error)."""
     return STATE_TO_AREA_MAP.get(state, "breakroom")
 
 
@@ -1145,12 +1160,45 @@ def leave_agent():
 
 @app.route("/status", methods=["GET"])
 def get_status():
-    """Get current main state (backward compatibility). Optionally include officeName from IDENTITY.md."""
+    """Get current state (19-agent Shadow Collective format)."""
     state = load_state()
-    office_name = get_office_name_from_identity()
-    if office_name:
-        state["officeName"] = office_name
+    # Always set HQ name
+    if "agents" in state:
+        state.setdefault("hq_name", "Shadow Collective HQ")
+    else:
+        # Legacy format: inject office name for backward compat
+        office_name = get_office_name_from_identity()
+        if office_name:
+            state["officeName"] = office_name
     return jsonify(state)
+
+
+@app.route("/api/agents", methods=["GET"])
+def api_agents():
+    """Return all 19 agents with metadata from state.json."""
+    state = load_state()
+    agents = state.get("agents", {})
+    if not isinstance(agents, dict) or not agents:
+        # Fallback: return default agents all idle
+        agents = {name: {"state": "idle", "room": "operations", "task": "", "phase": 1, "active": True} for name in SHADOW_COLLECTIVE_AGENTS}
+    # Return as a list with agent name included in each entry
+    result = []
+    for name in SHADOW_COLLECTIVE_AGENTS:
+        agent_data = agents.get(name, {"state": "idle", "room": "operations", "task": "", "phase": 1, "active": True})
+        entry = {"name": name}
+        entry.update(agent_data)
+        result.append(entry)
+    return jsonify(result)
+
+
+@app.route("/api/activity", methods=["GET"])
+def api_activity():
+    """Return last 20 activity_log entries."""
+    state = load_state()
+    activity_log = state.get("activity_log", [])
+    if not isinstance(activity_log, list):
+        activity_log = []
+    return jsonify(activity_log[:20])
 
 
 @app.route("/agent-push", methods=["POST"])
@@ -1236,7 +1284,7 @@ def health():
     """Health check"""
     return jsonify({
         "status": "ok",
-        "service": "star-office-ui",
+        "service": "shadow-collective",
         "timestamp": datetime.now().isoformat(),
     })
 
@@ -1289,20 +1337,62 @@ def get_yesterday_memo():
 
 @app.route("/set_state", methods=["POST"])
 def set_state_endpoint():
-    """Set state via POST (for UI control panel)"""
+    """Set agent state via POST (for UI control panel).
+
+    Accepts JSON body:
+    - agent: agent name (required for 19-agent format)
+    - state: new state value
+    - task: task description
+    - room: room name
+    Also supports legacy single-agent format (state + detail).
+    """
     try:
         data = request.get_json()
         if not isinstance(data, dict):
             return jsonify({"status": "error", "msg": "invalid json"}), 400
-        state = load_state()
+
+        current = load_state()
+
+        # New 19-agent format: update specific agent
+        agent_name = (data.get("agent") or "").strip().lower()
+        if agent_name and "agents" in current:
+            if agent_name not in [a for a in SHADOW_COLLECTIVE_AGENTS]:
+                return jsonify({"status": "error", "msg": f"unknown agent: {agent_name}"}), 400
+            agents = current.get("agents", {})
+            if agent_name not in agents:
+                agents[agent_name] = {"state": "idle", "room": "operations", "task": "", "phase": 1, "active": True}
+            if "state" in data:
+                s = normalize_agent_state(data["state"])
+                agents[agent_name]["state"] = s
+            if "task" in data:
+                agents[agent_name]["task"] = data["task"]
+            if "room" in data:
+                r = data["room"].lower()
+                if r in VALID_ROOMS:
+                    agents[agent_name]["room"] = r
+            # Append to activity_log
+            activity_log = current.get("activity_log", [])
+            if not isinstance(activity_log, list):
+                activity_log = []
+            activity_log.insert(0, {
+                "agent": agent_name,
+                "action": data.get("task", "") or data.get("state", ""),
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "status": "done" if agents[agent_name]["state"] in ("idle", "sleeping") else "pending",
+            })
+            current["activity_log"] = activity_log[:50]
+            current["agents"] = agents
+            save_state(current)
+            return jsonify({"status": "ok", "agent": agent_name})
+
+        # Legacy single-agent format fallback
         if "state" in data:
-            s = data["state"]
-            if s in VALID_AGENT_STATES:
-                state["state"] = s
+            s = normalize_agent_state(data["state"])
+            current["state"] = s
         if "detail" in data:
-            state["detail"] = data["detail"]
-        state["updated_at"] = datetime.now().isoformat()
-        save_state(state)
+            current["detail"] = data["detail"]
+        current["updated_at"] = datetime.now().isoformat()
+        save_state(current)
         return jsonify({"status": "ok"})
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
@@ -2075,7 +2165,7 @@ if __name__ == "__main__":
         backend_port = 19000
 
     print("=" * 50)
-    print("Star Office UI - Backend State Service")
+    print("Shadow Collective - Backend State Service")
     print("=" * 50)
     print(f"State file: {STATE_FILE}")
     print(f"Listening on: http://0.0.0.0:{backend_port}")

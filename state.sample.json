@@ -1,6 +1,30 @@
 {
-  "state": "idle",
-  "detail": "Waiting...",
-  "progress": 0,
-  "updated_at": "2026-02-26T00:00:00"
+  "hq_name": "Shadow Collective HQ",
+  "version": "3.0",
+  "agents": {
+    "shadow": {"state": "working", "room": "ceo-suite", "task": "reviewing reports", "phase": 1, "active": true},
+    "nexus": {"state": "working", "room": "chief-of-staff", "task": "coordinating ops", "phase": 1, "active": true},
+    "forge": {"state": "working", "room": "operations", "task": "deploying v2.1.0", "phase": 1, "active": true},
+    "warden": {"state": "idle", "room": "operations", "task": "", "phase": 1, "active": true},
+    "stack": {"state": "working", "room": "operations", "task": "running tests", "phase": 1, "active": true},
+    "atlas": {"state": "working", "room": "intelligence", "task": "scanning URLs", "phase": 1, "active": true},
+    "ink": {"state": "working", "room": "creative", "task": "SEO draft ready", "phase": 1, "active": true},
+    "canvas": {"state": "idle", "room": "creative", "task": "", "phase": 2, "active": true},
+    "ledger": {"state": "working", "room": "business", "task": "monthly report", "phase": 2, "active": true},
+    "wire": {"state": "idle", "room": "external", "task": "", "phase": 2, "active": true},
+    "juris": {"state": "idle", "room": "governance", "task": "", "phase": 2, "active": true},
+    "diplomat": {"state": "working", "room": "external", "task": "partnership pending", "phase": 2, "active": true},
+    "ryder": {"state": "idle", "room": "personal", "task": "", "phase": 2, "active": true},
+    "oracle": {"state": "locked", "room": "intelligence", "task": "", "phase": 3, "active": false},
+    "apex": {"state": "locked", "room": "business", "task": "", "phase": 3, "active": false},
+    "foundry": {"state": "locked", "room": "business", "task": "", "phase": 3, "active": false},
+    "merchant": {"state": "locked", "room": "business", "task": "", "phase": 3, "active": false},
+    "harmony": {"state": "locked", "room": "people", "task": "", "phase": 4, "active": false},
+    "archive": {"state": "locked", "room": "people", "task": "", "phase": 4, "active": false}
+  },
+  "activity_log": [
+    {"agent": "forge", "action": "deploying v2.1.0", "timestamp": "2026-03-15T16:00:00Z", "status": "done"},
+    {"agent": "warden", "action": "threat level CLEAR", "timestamp": "2026-03-15T15:58:00Z", "status": "done"},
+    {"agent": "atlas", "action": "scanning targets...", "timestamp": "2026-03-15T15:55:00Z", "status": "pending"}
+  ]
 }
