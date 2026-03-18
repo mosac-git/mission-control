@@ -526,10 +526,11 @@ async function performHealthCheck() {
   // Check gateway connection
   try {
     const gatewayStatus = await getGatewayStatus()
+    const gwReachable = gatewayStatus.running || gatewayStatus.port_listening
     health.checks.push({
       name: 'Gateway',
-      status: gatewayStatus.running ? 'healthy' : 'unhealthy',
-      message: gatewayStatus.running ? 'Gateway is running' : 'Gateway is not running'
+      status: gwReachable ? 'healthy' : 'unhealthy',
+      message: gwReachable ? 'Gateway is running' : 'Gateway is not running'
     })
   } catch (error) {
     health.checks.push({
