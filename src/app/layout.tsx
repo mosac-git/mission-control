@@ -52,8 +52,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Mission Control',
-  description: 'OpenClaw Agent Orchestration Dashboard',
+  title: 'Shadow Collective',
+  description: 'Shadow Collective — Agent Orchestration Dashboard',
   metadataBase,
   icons: {
     icon: [
@@ -64,20 +64,20 @@ export const metadata: Metadata = {
     shortcut: ['/icon.png'],
   },
   openGraph: {
-    title: 'Mission Control',
-    description: 'OpenClaw Agent Orchestration Dashboard',
-    images: [{ url: '/brand/mc-logo-512.png', width: 512, height: 512, alt: 'Mission Control logo' }],
+    title: 'Shadow Collective',
+    description: 'Shadow Collective — Agent Orchestration Dashboard',
+    images: [{ url: '/brand/mc-logo-512.png', width: 512, height: 512, alt: 'Shadow Collective logo' }],
   },
   twitter: {
     card: 'summary',
-    title: 'Mission Control',
-    description: 'OpenClaw Agent Orchestration Dashboard',
+    title: 'Shadow Collective',
+    description: 'Shadow Collective — Agent Orchestration Dashboard',
     images: ['/brand/mc-logo-512.png'],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Mission Control',
+    title: 'Shadow Collective',
   },
 }
 
