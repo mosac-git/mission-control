@@ -186,7 +186,7 @@ export default function SetupPage() {
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center mb-3">
             <Image
-              src="/brand/mc-logo-128.png"
+              src="/brand/sc-logo-128.png"
               alt="Shadow Collective logo"
               width={48}
               height={48}

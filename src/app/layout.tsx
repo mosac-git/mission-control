@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.png', type: 'image/png', sizes: '256x256' },
-      { url: '/brand/mc-logo-128.png', type: 'image/png', sizes: '128x128' },
+      { url: '/brand/sc-logo-128.png', type: 'image/png', sizes: '128x128' },
     ],
     apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
     shortcut: ['/icon.png'],
@@ -66,13 +66,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Shadow Collective',
     description: 'Shadow Collective — Agent Orchestration Dashboard',
-    images: [{ url: '/brand/mc-logo-512.png', width: 512, height: 512, alt: 'Shadow Collective logo' }],
+    images: [{ url: '/brand/sc-logo-512.png', width: 512, height: 512, alt: 'Shadow Collective logo' }],
   },
   twitter: {
     card: 'summary',
     title: 'Shadow Collective',
     description: 'Shadow Collective — Agent Orchestration Dashboard',
-    images: ['/brand/mc-logo-512.png'],
+    images: ['/brand/sc-logo-512.png'],
   },
   appleWebApp: {
     capable: true,
