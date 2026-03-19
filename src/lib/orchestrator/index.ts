@@ -12,7 +12,12 @@ export function getOrchestrationEngine(): OrchestrationEngine {
     // Load Discord webhook configs from env vars
     // Format: DISCORD_WEBHOOK_<CHANNEL>=<url>
     const discordConfigs: DiscordWebhookConfig[] = []
-    const channelNames = ['general', 'taskboard', 'ops-feed', 'alerts', 'active-projects']
+    const channelNames = [
+      'general', 'taskboard', 'ops-feed', 'alerts', 'active-projects', 'approvals',
+      'shadow', 'nexus', 'forge', 'warden', 'stack', 'atlas', 'oracle',
+      'ink', 'canvas', 'ledger', 'apex', 'merchant', 'foundry',
+      'juris', 'diplomat', 'wire', 'ryder', 'harmony', 'archive',
+    ]
     for (const name of channelNames) {
       const envKey = `DISCORD_WEBHOOK_${name.toUpperCase().replace(/-/g, '_')}`
       const url = process.env[envKey]

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDatabase } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
 import { logger } from '@/lib/logger'
-import { OrchestrationEngine } from '@/lib/orchestrator/engine'
+import { getOrchestrationEngine } from '@/lib/orchestrator'
 
 /**
  * POST /api/orchestrator — Submit a task to the orchestration engine.
@@ -23,9 +23,7 @@ export async function POST(request: NextRequest) {
     const source: 'discord' | 'mc-chat' =
       body.source === 'discord' ? 'discord' : 'mc-chat'
 
-    const db = getDatabase()
-    const engine = new OrchestrationEngine({ db })
-
+    const engine = getOrchestrationEngine()
     const taskId = await engine.handleUserMessage(message, source)
 
     logger.info({ taskId, source }, 'Orchestration task created')
