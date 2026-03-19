@@ -9,6 +9,19 @@
  * Each agent has a primary model/provider and a fallback pair.  The LLM client
  * (llm-client.ts) handles circuit breaking and automatic failover; this config
  * supplies the routing metadata.
+ *
+ * Model routing:
+ *   openrouter  — requires OPENROUTER_API_KEY; model name sent as-is
+ *   kilo-gateway — anonymous, no auth; model name sent as-is (no prefix)
+ *
+ * Working model inventory (2026-03):
+ *   openrouter/openrouter/hunter-alpha  (1M ctx)    — SHADOW, NEXUS, ATLAS, APEX, ORACLE
+ *   openrouter/openrouter/healer-alpha  (262K ctx)  — INK, WIRE, FOUNDRY
+ *   openrouter/step-fun/step-2-16k-exp:free         — HARMONY
+ *   minimax/minimax-m2.5:free    via kilo-gateway   — DIPLOMAT, ARCHIVE, LEDGER, MERCHANT
+ *   x-ai/grok-code-fast:free     via kilo-gateway   — FORGE, STACK, WARDEN
+ *   nvidia/nemotron-3-super:free via kilo-gateway   — JURIS, CANVAS
+ *   corethink/corethink:free     via kilo-gateway   — RYDER
  */
 
 export interface AgentConfig {
@@ -31,7 +44,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Leader — receives all tasks from user, makes strategic decisions, delegates to Nexus, reviews final output',
     model: 'openrouter/openrouter/hunter-alpha',
     provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
+    fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
     reportsTo: 'user',
     personality:
@@ -41,10 +54,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   nexus: {
     name: 'Nexus',
     role: 'Coordinator — breaks down tasks from Shadow into specialist subtasks, assigns agents, consolidates results',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
-    provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
-    fallbackProvider: 'openrouter',
+    model: 'openrouter/openrouter/hunter-alpha',
+    provider: 'openrouter',
+    fallbackModel: 'minimax/minimax-m2.5:free',
+    fallbackProvider: 'kilo-gateway',
     reportsTo: 'shadow',
     personality:
       'Organized and strategic. Thinks in systems and dependencies. Methodical but efficient.',
@@ -56,10 +69,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   forge: {
     name: 'Forge',
     role: 'Engineering — code, technical builds, architecture',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
-    fallbackProvider: 'kilo-gateway',
+    model: 'x-ai/grok-code-fast:free',
+    provider: 'kilo-gateway',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
       'Pragmatic builder. Cuts through ambiguity with working code. Dry humor.',
@@ -68,10 +81,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   warden: {
     name: 'Warden',
     role: 'Security — monitoring, threat detection, alerts, compliance',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
-    fallbackProvider: 'kilo-gateway',
+    model: 'x-ai/grok-code-fast:free',
+    provider: 'kilo-gateway',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
       'Vigilant and thorough. Sees risks others miss. Never alarmist, always prepared.',
@@ -80,10 +93,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   stack: {
     name: 'Stack',
     role: 'DevOps — infrastructure, deployments, CI/CD, server management',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
-    fallbackProvider: 'kilo-gateway',
+    model: 'x-ai/grok-code-fast:free',
+    provider: 'kilo-gateway',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
       'Reliable and steady. Speaks in infrastructure metaphors. Calm under pressure.',
@@ -92,10 +105,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   atlas: {
     name: 'Atlas',
     role: 'Research — analysis, intelligence gathering, market research, competitive analysis',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
-    provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
-    fallbackProvider: 'openrouter',
+    model: 'openrouter/openrouter/hunter-alpha',
+    provider: 'openrouter',
+    fallbackModel: 'minimax/minimax-m2.5:free',
+    fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
       'Curious and thorough. Loves deep dives. Presents findings with clarity and insight.',
@@ -106,7 +119,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Analytics — data analysis, predictions, metrics, dashboards',
     model: 'openrouter/openrouter/hunter-alpha',
     provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
+    fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
@@ -118,7 +131,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Writing — content creation, copywriting, editing, documentation',
     model: 'openrouter/openrouter/healer-alpha',
     provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
+    fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
@@ -128,9 +141,9 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   canvas: {
     name: 'Canvas',
     role: 'Design — UI/UX, visual design, mockups, brand aesthetics',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
+    model: 'nvidia/nemotron-3-super:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -140,9 +153,9 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   ledger: {
     name: 'Ledger',
     role: 'Finance — budgets, accounting, financial analysis, cost tracking',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
+    model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -154,7 +167,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Integrations — APIs, third-party connections, data pipelines',
     model: 'openrouter/openrouter/healer-alpha',
     provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
+    fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
@@ -164,9 +177,9 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   juris: {
     name: 'Juris',
     role: 'Legal — compliance, contracts, terms of service, regulatory',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
+    model: 'nvidia/nemotron-3-super:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -176,9 +189,9 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   diplomat: {
     name: 'Diplomat',
     role: 'Communications — PR, outreach, partnerships, external messaging',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
+    model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -188,10 +201,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   ryder: {
     name: 'Ryder',
     role: 'Career — hiring, HR, team growth, talent acquisition',
-    model: 'openrouter/z-ai/glm-4.5-air:free',
-    provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
-    fallbackProvider: 'kilo-gateway',
+    model: 'corethink/corethink:free',
+    provider: 'kilo-gateway',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
       'People-focused and empathetic. Sees potential in everyone. Encouraging.',
@@ -200,10 +213,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   apex: {
     name: 'Apex',
     role: 'Trading — markets, trading strategy, financial instruments',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
-    provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
-    fallbackProvider: 'openrouter',
+    model: 'openrouter/openrouter/hunter-alpha',
+    provider: 'openrouter',
+    fallbackModel: 'minimax/minimax-m2.5:free',
+    fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
       'Sharp and fast. Thinks in risk/reward. Competitive but calculated.',
@@ -214,7 +227,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Ventures — innovation, R&D, new business exploration, prototyping',
     model: 'openrouter/openrouter/healer-alpha',
     provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
+    fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
@@ -224,9 +237,9 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   merchant: {
     name: 'Merchant',
     role: 'Commerce — sales, partnerships, revenue, business development',
-    model: 'kilo-gateway/minimax/minimax-m2.5:free',
+    model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/qwen/qwen3-coder:free',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -236,9 +249,9 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   harmony: {
     name: 'Harmony',
     role: 'Culture — team health, morale, internal communications, collaboration',
-    model: 'openrouter/z-ai/glm-4.5-air:free',
+    model: 'step-fun/step-2-16k-exp:free',
     provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
+    fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
     reportsTo: 'nexus',
     personality:
@@ -248,10 +261,10 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   archive: {
     name: 'Archive',
     role: 'Knowledge — documentation, knowledge base, organizational memory',
-    model: 'openrouter/z-ai/glm-4.5-air:free',
-    provider: 'openrouter',
-    fallbackModel: 'kilo-gateway/minimax/minimax-m2.5:free',
-    fallbackProvider: 'kilo-gateway',
+    model: 'minimax/minimax-m2.5:free',
+    provider: 'kilo-gateway',
+    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
       'Meticulous and organized. Remembers everything. Values completeness and accuracy.',

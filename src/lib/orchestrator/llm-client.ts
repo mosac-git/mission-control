@@ -60,12 +60,12 @@ export interface LLMClientOptions {
 export const PROVIDER_URLS: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1/chat/completions',
   'kilo-gateway':
-    process.env.KILO_GATEWAY_URL || 'http://localhost:8787/v1/chat/completions',
+    process.env.KILO_GATEWAY_URL || 'https://api.kilo.ai/api/gateway/v1/chat/completions',
 }
 
 export const DEFAULT_FALLBACK_CHAIN = [
   'kilo-gateway/minimax/minimax-m2.5:free',
-  'openrouter/qwen/qwen3-coder:free',
+  'kilo-gateway/corethink/corethink:free',
 ]
 
 const CALL_TIMEOUT_MS = 120_000 // 2 minutes
@@ -268,11 +268,16 @@ export class LLMClient {
       max_tokens: opts.maxTokens ?? 4096,
     })
 
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (opts.provider === 'openrouter' && process.env.OPENROUTER_API_KEY) {
+      headers['Authorization'] = `Bearer ${process.env.OPENROUTER_API_KEY}`
+    }
+
     let response: Response
     try {
       response = (await this.fetchFn(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body,
         signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
       })) as Response
