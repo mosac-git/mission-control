@@ -15,8 +15,8 @@
  *   kilo-gateway — anonymous, no auth; model name sent as-is (no prefix)
  *
  * Working model inventory (2026-03):
- *   openrouter/openrouter/hunter-alpha  (1M ctx)    — SHADOW, NEXUS, ATLAS, APEX, ORACLE
- *   openrouter/openrouter/healer-alpha  (262K ctx)  — INK, WIRE, FOUNDRY
+ *   xiaomi/mimo-v2-pro  (1M ctx)    — SHADOW, NEXUS, ATLAS, APEX, ORACLE
+ *   xiaomi/mimo-v2-omni  (262K ctx)  — INK, WIRE, FOUNDRY
  *   openrouter/step-fun/step-2-16k-exp:free         — HARMONY
  *   minimax/minimax-m2.5:free    via kilo-gateway   — DIPLOMAT, ARCHIVE, LEDGER, MERCHANT
  *   x-ai/grok-code-fast:free     via kilo-gateway   — FORGE, STACK, WARDEN
@@ -42,7 +42,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   shadow: {
     name: 'Shadow',
     role: 'Leader — receives all tasks from user, makes strategic decisions, delegates to Nexus, reviews final output',
-    model: 'openrouter/openrouter/hunter-alpha',
+    model: 'xiaomi/mimo-v2-pro',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -54,7 +54,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   nexus: {
     name: 'Nexus',
     role: 'Coordinator — breaks down tasks from Shadow into specialist subtasks, assigns agents, consolidates results',
-    model: 'openrouter/openrouter/hunter-alpha',
+    model: 'xiaomi/mimo-v2-pro',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -71,7 +71,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Engineering — code, technical builds, architecture',
     model: 'x-ai/grok-code-fast:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -83,7 +83,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Security — monitoring, threat detection, alerts, compliance',
     model: 'x-ai/grok-code-fast:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -95,7 +95,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'DevOps — infrastructure, deployments, CI/CD, server management',
     model: 'x-ai/grok-code-fast:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -105,7 +105,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   atlas: {
     name: 'Atlas',
     role: 'Research — analysis, intelligence gathering, market research, competitive analysis',
-    model: 'openrouter/openrouter/hunter-alpha',
+    model: 'xiaomi/mimo-v2-pro',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -117,7 +117,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   oracle: {
     name: 'Oracle',
     role: 'Analytics — data analysis, predictions, metrics, dashboards',
-    model: 'openrouter/openrouter/hunter-alpha',
+    model: 'xiaomi/mimo-v2-pro',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -129,7 +129,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   ink: {
     name: 'Ink',
     role: 'Writing — content creation, copywriting, editing, documentation',
-    model: 'openrouter/openrouter/healer-alpha',
+    model: 'xiaomi/mimo-v2-omni',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -143,7 +143,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Design — UI/UX, visual design, mockups, brand aesthetics',
     model: 'nvidia/nemotron-3-super:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -155,7 +155,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Finance — budgets, accounting, financial analysis, cost tracking',
     model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -165,7 +165,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   wire: {
     name: 'Wire',
     role: 'Integrations — APIs, third-party connections, data pipelines',
-    model: 'openrouter/openrouter/healer-alpha',
+    model: 'xiaomi/mimo-v2-omni',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -179,7 +179,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Legal — compliance, contracts, terms of service, regulatory',
     model: 'nvidia/nemotron-3-super:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -191,7 +191,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Communications — PR, outreach, partnerships, external messaging',
     model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -203,7 +203,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Career — hiring, HR, team growth, talent acquisition',
     model: 'corethink/corethink:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -213,7 +213,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   apex: {
     name: 'Apex',
     role: 'Trading — markets, trading strategy, financial instruments',
-    model: 'openrouter/openrouter/hunter-alpha',
+    model: 'xiaomi/mimo-v2-pro',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -225,7 +225,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
   foundry: {
     name: 'Foundry',
     role: 'Ventures — innovation, R&D, new business exploration, prototyping',
-    model: 'openrouter/openrouter/healer-alpha',
+    model: 'xiaomi/mimo-v2-omni',
     provider: 'openrouter',
     fallbackModel: 'minimax/minimax-m2.5:free',
     fallbackProvider: 'kilo-gateway',
@@ -239,7 +239,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Commerce — sales, partnerships, revenue, business development',
     model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:
@@ -263,7 +263,7 @@ export const AGENT_ROSTER: Record<string, AgentConfig> = {
     role: 'Knowledge — documentation, knowledge base, organizational memory',
     model: 'minimax/minimax-m2.5:free',
     provider: 'kilo-gateway',
-    fallbackModel: 'openrouter/openrouter/healer-alpha',
+    fallbackModel: 'xiaomi/mimo-v2-omni',
     fallbackProvider: 'openrouter',
     reportsTo: 'nexus',
     personality:

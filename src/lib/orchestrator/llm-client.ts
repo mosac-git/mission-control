@@ -60,7 +60,7 @@ export interface LLMClientOptions {
 export const PROVIDER_URLS: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1/chat/completions',
   'kilo-gateway':
-    process.env.KILO_GATEWAY_URL || 'https://api.kilo.ai/api/gateway/v1/chat/completions',
+    process.env.KILO_GATEWAY_URL || 'https://api.kilo.ai/api/gateway/chat/completions',
 }
 
 export const DEFAULT_FALLBACK_CHAIN = [
