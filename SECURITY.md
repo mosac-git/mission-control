@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability in Mission Control, please report it responsibly.
 
-**Do not open a public issue.** Instead, email security@builderz.dev with:
+**Please report via GitHub Issues** at https://github.com/mosac-git/mission-control/issues with:
 
 - Description of the vulnerability
 - Steps to reproduce

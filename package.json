@@ -77,11 +77,11 @@
     "dashboard",
     "nextjs"
   ],
-  "author": "Builderz Labs",
+  "author": "Shadow Collective",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/builderz-labs/mission-control.git"
+    "url": "https://github.com/mosac-git/mission-control.git"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
