@@ -113,6 +113,9 @@ export class OrchestrationEngine {
   private readonly providerMinGap: number
   private waitQueue: Array<() => void> = []
 
+  // Chat sync: maps task ID -> conversation_id for MC Chat panel persistence
+  private taskConversations = new Map<number, string>()
+
   constructor(opts: EngineOptions) {
     this.llm = opts.llm || new LLMClient()
     this.discord = opts.discord ?? null
@@ -141,6 +144,13 @@ export class OrchestrationEngine {
       orchestrationState: 'CREATED',
       createdBy: source === 'discord' ? 'discord-user' : 'mc-user',
     })
+
+    // 1b. Create a conversation for this task in MC Chat and insert the user message
+    const conversationId = `orch_${taskId}_${Date.now()}`
+    this.taskConversations.set(taskId, conversationId)
+    this.updateTaskMetadata(taskId, { conversation_id: conversationId })
+    const fromUser = source === 'discord' ? 'discord-user' : 'mc-user'
+    this.insertChatMessage(conversationId, fromUser, null, message, 'text')
 
     // 2. Transition to SHADOW_ANALYZING
     this.transitionState(taskId, 'SHADOW_ANALYZING')
@@ -284,7 +294,7 @@ export class OrchestrationEngine {
 
     // Post Shadow's message to Discord and MC Chat
     await this.postAgentMessage('Shadow', parsed.message)
-    this.broadcastChat('shadow', parsed.message)
+    this.broadcastChat('shadow', parsed.message, taskId)
 
     switch (parsed.action) {
       case 'delegate': {
@@ -339,7 +349,7 @@ export class OrchestrationEngine {
 
     // Post Nexus's message
     await this.postAgentMessage('Nexus', parsed.message)
-    this.broadcastChat('nexus', parsed.message)
+    this.broadcastChat('nexus', parsed.message, parentTaskId)
 
     switch (parsed.action) {
       case 'assign': {
@@ -412,7 +422,7 @@ export class OrchestrationEngine {
     const config = getAgentConfig(agentName)
     const displayName = config?.name ?? agentName
     await this.postAgentMessage(displayName, parsed.message)
-    this.broadcastChat(agentName, parsed.message)
+    this.broadcastChat(agentName, parsed.message, subtaskId)
 
     // Update subtask
     const statusMap: Record<string, string> = {
@@ -478,7 +488,7 @@ export class OrchestrationEngine {
     )
 
     await this.postAgentMessage('Shadow', parsed.message)
-    this.broadcastChat('shadow', parsed.message)
+    this.broadcastChat('shadow', parsed.message, taskId)
 
     switch (parsed.action) {
       case 'complete':
@@ -843,12 +853,73 @@ export class OrchestrationEngine {
     }
   }
 
-  private broadcastChat(agentName: string, message: string): void {
+  /**
+   * Persist an agent message into MC's messages table AND broadcast via SSE.
+   * This ensures the Chat panel shows orchestration activity.
+   */
+  private broadcastChat(agentName: string, message: string, taskId?: number): void {
+    const conversationId = this.resolveConversationId(taskId)
+    // Insert into DB so the Chat panel can read it
+    this.insertChatMessage(conversationId, agentName, null, message, 'text')
+    // Broadcast via SSE for live updates
     eventBus.broadcast('chat.message', {
       from_agent: agentName,
       content: message,
-      conversation_id: 'orchestration',
+      conversation_id: conversationId,
     })
+  }
+
+  /**
+   * Resolve the conversation_id for a given task ID.
+   * Falls back to task metadata, then to a generic 'orchestration' conversation.
+   */
+  private resolveConversationId(taskId?: number): string {
+    if (taskId != null) {
+      // Check in-memory cache first
+      const cached = this.taskConversations.get(taskId)
+      if (cached) return cached
+      // Check task metadata in DB
+      const meta = this.getTaskMetadata(taskId)
+      if (meta?.conversation_id && typeof meta.conversation_id === 'string') {
+        this.taskConversations.set(taskId, meta.conversation_id)
+        return meta.conversation_id
+      }
+      // Check parent task (subtasks inherit parent conversation)
+      const task = this.getTask(taskId)
+      if (task?.parent_task_id != null) {
+        return this.resolveConversationId(task.parent_task_id)
+      }
+    }
+    return 'orchestration'
+  }
+
+  /**
+   * Insert a message row into the messages table.
+   * Uses workspace_id=1 (default workspace) since orchestration is system-level.
+   */
+  private insertChatMessage(
+    conversationId: string,
+    fromAgent: string,
+    toAgent: string | null,
+    content: string,
+    messageType: string,
+    metadata?: Record<string, unknown>,
+  ): void {
+    try {
+      this.db.prepare(
+        `INSERT INTO messages (conversation_id, from_agent, to_agent, content, message_type, metadata, workspace_id)
+         VALUES (?, ?, ?, ?, ?, ?, 1)`,
+      ).run(
+        conversationId,
+        fromAgent,
+        toAgent,
+        content,
+        messageType,
+        metadata ? JSON.stringify(metadata) : null,
+      )
+    } catch {
+      // Swallow DB insert failures (table may not exist in test DBs)
+    }
   }
 
   // -----------------------------------------------------------------------

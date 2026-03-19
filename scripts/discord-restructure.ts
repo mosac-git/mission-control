@@ -59,6 +59,8 @@ const CHANNELS_TO_ARCHIVE = new Set([
   'wire-integrations',
   'ryder-career',
   'nexus-briefing',
+  'warden-security',
+  'stack-dev',
 ])
 
 // Old categories to archive
