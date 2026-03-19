@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     estimated_hours INTEGER,
     actual_hours INTEGER,
     tags TEXT, -- JSON array of tags
-    metadata TEXT -- JSON for additional data
+    metadata TEXT, -- JSON for additional data
+    parent_task_id INTEGER REFERENCES tasks(id),
+    orchestration_state TEXT
 );
 
 -- Agents Table - Squad management
@@ -56,6 +58,7 @@ CREATE TABLE IF NOT EXISTS activities (
     actor TEXT NOT NULL, -- who performed the action
     description TEXT NOT NULL, -- human-readable description
     data TEXT, -- JSON with additional context
+    discord_message_id TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
@@ -81,6 +84,20 @@ CREATE TABLE IF NOT EXISTS task_subscriptions (
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     UNIQUE(task_id, agent_name),
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+);
+
+-- Messages Table - Agent-to-agent communication
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id TEXT NOT NULL,
+    from_agent TEXT NOT NULL,
+    to_agent TEXT,
+    content TEXT NOT NULL,
+    message_type TEXT DEFAULT 'text',
+    metadata TEXT,
+    discord_message_id TEXT,
+    read_at INTEGER,
+    created_at INTEGER DEFAULT (unixepoch())
 );
 
 -- Standup reports archive
@@ -131,5 +148,11 @@ CREATE INDEX IF NOT EXISTS idx_quality_reviews_task_id ON quality_reviews(task_i
 CREATE INDEX IF NOT EXISTS idx_quality_reviews_reviewer ON quality_reviews(reviewer);
 CREATE INDEX IF NOT EXISTS idx_gateway_health_logs_gateway_id ON gateway_health_logs(gateway_id);
 CREATE INDEX IF NOT EXISTS idx_gateway_health_logs_probed_at ON gateway_health_logs(probed_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parent_task_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_orch_state ON tasks(orchestration_state);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_agents ON messages(from_agent, to_agent);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_discord_msg ON messages(discord_message_id) WHERE discord_message_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_activities_discord_msg ON activities(discord_message_id) WHERE discord_message_id IS NOT NULL;
 
 -- Sample data intentionally omitted - seed in dev scripts if needed.

@@ -1262,6 +1262,24 @@ const migrations: Migration[] = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_gateway_health_logs_gateway_id ON gateway_health_logs(gateway_id)`)
       db.exec(`CREATE INDEX IF NOT EXISTS idx_gateway_health_logs_probed_at ON gateway_health_logs(probed_at)`)
     }
+  },
+  {
+    id: '042_task_orchestration',
+    up(db: Database.Database) {
+      db.exec(`ALTER TABLE tasks ADD COLUMN parent_task_id INTEGER REFERENCES tasks(id)`)
+      db.exec(`ALTER TABLE tasks ADD COLUMN orchestration_state TEXT`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parent_task_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_orch_state ON tasks(orchestration_state)`)
+    },
+  },
+  {
+    id: '043_discord_message_id',
+    up(db: Database.Database) {
+      db.exec(`ALTER TABLE messages ADD COLUMN discord_message_id TEXT`)
+      db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_discord_msg ON messages(discord_message_id) WHERE discord_message_id IS NOT NULL`)
+      db.exec(`ALTER TABLE activities ADD COLUMN discord_message_id TEXT`)
+      db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_activities_discord_msg ON activities(discord_message_id) WHERE discord_message_id IS NOT NULL`)
+    },
   }
 ]
 
