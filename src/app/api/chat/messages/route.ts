@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger'
 import { scanForInjection, sanitizeForPrompt } from '@/lib/injection-guard'
 import { callOpenClawGateway } from '@/lib/openclaw-gateway'
 import { resolveCoordinatorDeliveryTarget } from '@/lib/coordinator-routing'
+import { OrchestrationEngine } from '@/lib/orchestrator/engine'
 
 type ForwardInfo = {
   attempted: boolean
@@ -395,6 +396,22 @@ export async function POST(request: NextRequest) {
       { conversation_id, to, message_type },
       workspaceId
     )
+
+    // Route to orchestrator when the message looks like a task/command.
+    // Heuristic: explicit /task prefix OR sent to the main (no specific agent) channel.
+    // This runs in the background — the chat response is not blocked.
+    const isTaskCommand = content.startsWith('/task ')
+    const isMainChat = !to
+    if ((isTaskCommand || isMainChat) && message_type === 'text' && !isCoordinatorOverride) {
+      const orchestratorMessage = isTaskCommand ? content.slice('/task '.length).trim() : content
+      if (orchestratorMessage) {
+        const db2 = getDatabase()
+        const engine = new OrchestrationEngine({ db: db2 })
+        engine.handleUserMessage(orchestratorMessage, 'mc-chat').catch((err: unknown) => {
+          logger.warn({ err }, 'Background orchestration failed for chat message')
+        })
+      }
+    }
 
     // Create notification for recipient if specified
     if (to) {
