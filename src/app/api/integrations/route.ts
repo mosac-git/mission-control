@@ -54,13 +54,7 @@ const INTEGRATIONS: IntegrationDef[] = [
   { id: 'brave', name: 'Brave Search', category: 'search', envVars: ['BRAVE_API_KEY'], vaultItem: 'openclaw-brave-api-key' },
 
   // Social
-  {
-    id: 'x_twitter',
-    name: 'X / Twitter',
-    category: 'social',
-    envVars: ['X_COOKIES_PATH'],
-    recommendation: 'Recommended: use xint CLI as default (`xint auth`) instead of manual cookies path.',
-  },
+  { id: 'x_twitter', name: 'X / Twitter', category: 'social', envVars: ['X_COOKIES_PATH'] },
   { id: 'linkedin', name: 'LinkedIn', category: 'social', envVars: ['LINKEDIN_ACCESS_TOKEN'] },
 
   // Messaging — add entries here for each Telegram bot you run
