@@ -43,6 +43,18 @@ const EVENT_MAP: Record<string, string> = {
   'task.updated': 'activity.task_updated',
   'task.deleted': 'activity.task_deleted',
   'task.status_changed': 'activity.task_status_changed',
+  'orchestration.task_received': 'orchestration.task_received',
+  'orchestration.shadow_analyzing': 'orchestration.shadow_analyzing',
+  'orchestration.delegated': 'orchestration.delegated',
+  'orchestration.subtasks_assigned': 'orchestration.subtasks_assigned',
+  'orchestration.agent_working': 'orchestration.agent_working',
+  'orchestration.subtask_complete': 'orchestration.subtask_complete',
+  'orchestration.consolidating': 'orchestration.consolidating',
+  'orchestration.reviewing': 'orchestration.reviewing',
+  'orchestration.complete': 'orchestration.complete',
+  'orchestration.failed': 'orchestration.failed',
+  'discord.message': 'discord.message',
+  'approval.response': 'approval.response',
 }
 
 /**

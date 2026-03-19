@@ -32,6 +32,18 @@ export type EventType =
   | 'connection.created'
   | 'connection.disconnected'
   | 'github.synced'
+  | 'orchestration.task_received'
+  | 'orchestration.shadow_analyzing'
+  | 'orchestration.delegated'
+  | 'orchestration.subtasks_assigned'
+  | 'orchestration.agent_working'
+  | 'orchestration.subtask_complete'
+  | 'orchestration.consolidating'
+  | 'orchestration.reviewing'
+  | 'orchestration.complete'
+  | 'orchestration.failed'
+  | 'discord.message'
+  | 'approval.response'
 
 class ServerEventBus extends EventEmitter {
   private static instance: ServerEventBus | null = null

@@ -38,3 +38,41 @@ export function normalizeTaskUpdateStatus(args: {
   return undefined
 }
 
+/**
+ * Map an orchestration engine state string to the nearest Task status.
+ * Returns undefined if the state is unrecognised (caller should leave status unchanged).
+ */
+export function syncOrchestrationStatus(orchestrationState: string): TaskStatus | undefined {
+  switch (orchestrationState) {
+    case 'CREATED':
+      return 'inbox'
+
+    case 'SHADOW_ANALYZING':
+      return 'assigned'
+
+    case 'DELEGATED_TO_NEXUS':
+    case 'NEXUS_BREAKING_DOWN':
+    case 'SUBTASKS_ASSIGNED':
+    case 'AGENTS_WORKING':
+    case 'BLOCKED':
+      return 'in_progress'
+
+    case 'SUBTASKS_COMPLETE':
+    case 'NEXUS_CONSOLIDATING':
+      return 'review'
+
+    case 'SHADOW_REVIEWING':
+      return 'quality_review'
+
+    case 'COMPLETE':
+    case 'REPORTED':
+    case 'FAILED':
+    case 'TIMED_OUT':
+    case 'CANCELLED':
+      return 'done'
+
+    default:
+      return undefined
+  }
+}
+

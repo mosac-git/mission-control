@@ -129,6 +129,8 @@ export interface Task {
   github_branch?: string
   github_pr_number?: number
   github_pr_state?: string
+  parent_task_id?: number | null
+  orchestration_state?: string | null
 }
 
 export interface Agent {
