@@ -43,6 +43,7 @@ export type EventType =
   | 'orchestration.complete'
   | 'orchestration.failed'
   | 'discord.message'
+  | 'approval.requested'
   | 'approval.response'
 
 class ServerEventBus extends EventEmitter {
